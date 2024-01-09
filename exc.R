@@ -23,6 +23,7 @@ head(happy_data)
 dim(happy_data)
 # seeing what is a garbage
 happy_data[ , 13:18]
+happy_data[66, ]
 #dropping unnecessary columns
 happy_data <- happy_data[, -c(3,4,5,13, 14, 15, 16, 17, 18)] 
 # ------------------------------------------------------------------------------
@@ -53,7 +54,7 @@ names(happy_data) # 11. place is rank, 1st is name
 #install.packages('caTools')
 library(caTools)
 set.seed(123)
-dataset <- happy_data[2:10] #relevant columns into training
+dataset <- happy_data[2:9] #relevant columns into training
 names(dataset)
 dataset$Score <- happy_data$Ladder.score
 split = sample.split(dataset$Score, SplitRatio = 0.7) #splitting
@@ -81,6 +82,80 @@ gg.lm
 MSE.lm <- sum((test_set$Happiness.Score - y_pred_lm)^2)/nrow(test_set)
 print(paste("Mean Squared Error (Multiple Linear Regression):", MSE.lm))
 # Luckly: [1] "Mean Squared Error (Multiple Linear Regression): 0"
+
+# Data science about level of happiness in that particular example data:
+test1 <- data.frame(Ladder.score = 5.738,
+                    Logged.GDP.per.capita = 9.51,
+                    Social.support = 0.906,
+                    Healthy.life.expectancy = 65.9,
+                    Freedom.to.make.life.choices = 0.891,
+                    Generosity = 0.021,
+                    Perceptions.of.corruption = 0.843,
+                    Ladder.score.in.Dystopia = 1.778,
+                    Dystopia...residual = 1.604)
+print(paste("Happiness Score: ", round(predict(regressor_lm, test1), 3)))
+# [1] "Happiness Score:  5.738"
+# 5.738 - Paraguy (66th place) - ok
+
+# Plot first the most happy 10 countries:
+gg1 <- ggplot(happy_data[1:10, ],
+              aes(x=Country.name,
+                  y=Rank, 
+                  color=Country.name))+
+  geom_point()
+gg1
+# ------------------------------------------------------------------------------
+
+# 2nd model: SVM
+library(e1071)
+regressor_svr = svm(formula = Score ~ .,
+                    data = dataset,
+                    type = 'eps-regression',
+                    kernel = 'radial')
+summary(regressor_svr)
+# Number of Support Vectors:  45
+
+y_pred_svr = predict(regressor_svr,  newdata = test_set)
+
+
+Pred_Actual_svr <- as.data.frame(cbind(Prediction = y_pred_svr, Actual = test_set$Score))
+    
+                                                              
+gg.svr <- ggplot(Pred_Actual_svr, aes(Prediction, Actual)) +
+        geom_point() + theme_bw() + geom_abline() +
+        labs(title = "SVR", x = "Actual happiness score",
+         y = "Predicted happiness score")
+gg.svr
+ggsave("svrmodel.png")
+# ------------------------------------------------------------------------------
+# 2nd Data science test about level of happiness in that particular example data
+# with SVM this time:
+test2 <- data.frame(Ladder.score = 5.738,
+                    Logged.GDP.per.capita = 9.51,
+                    Social.support = 0.906,
+                    Healthy.life.expectancy = 65.9,
+                    Freedom.to.make.life.choices = 0.891,
+                    Generosity = 0.021,
+                    Perceptions.of.corruption = 0.843,
+                    Ladder.score.in.Dystopia = 1.778,
+                    Dystopia...residual = 1.604)
+print(paste("Happiness Score: ", round(predict(regressor_svr, test2), 3)))
+# Output: [1] "Happiness Score:  5.803"
+# Little worse than in linear regression
+
+accuracy_svm <-  5.803 / 5.738 
+# 100-1.011328 % = 98,9%
+
+
+
+
+
+
+
+
+
+
+
 
 
 
