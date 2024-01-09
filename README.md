@@ -8,4 +8,7 @@ R language in RStudio
 Dataset source: The World Happiness Report Official Website (https://worldhappiness.report/ed/2023/
 
 ## models
-Two algorithms tested here were Multiple Linear Regression and 
+Two algorithms tested here were Multiple Linear Regression and SVM
+
+## Effect
+Linear Regression: 100% accuracy and SVM about 98,9%
